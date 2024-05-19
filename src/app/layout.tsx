@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="light">
-      <body className={`${inter.variable} ${spaceGrotest.variable}`}>
+      <body className={`${inter.variable} ${spaceGrotest.variable} overflow-clip`}>
         <ClerkProvider
           appearance={{
             elements: {

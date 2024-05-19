@@ -1,4 +1,6 @@
 import NavBar from "@/components/common/nav/NavBar";
+import LeftSidebar from "@/components/common/sidebars/LeftSidebar";
+import RightSidebar from "@/components/common/sidebars/RightSidebar";
 import React from "react";
 
 interface Props {
@@ -10,12 +12,11 @@ const Layout: React.FC<Props> = ({ children }) => {
     <main className="bg-light-850 dark:bg-dark-100 relative">
       <NavBar />
       <div className="flex">
-        <aside></aside>
+        <LeftSidebar />
         <section className="flex min-h-screen flex-1 flex-col px-6 pb-6 pt-6 max-md:pb-14 sm:px-14">
-          <div className="mx-auto w-full"></div>
-          {children}
+          <div className="mx-auto w-full max-w-5xl custom-scrollbar">{children}</div>
         </section>
-        <aside></aside>
+        <RightSidebar />
       </div>
     </main>
   );

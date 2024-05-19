@@ -11,26 +11,39 @@ interface Props {
   children: React.ReactNode;
 }
 
-const Context = createContext<ContextType | undefined>(undefined);
+const Context = createContext<ContextType>({
+  mode: "",
+  setMode: () => {},
+});
 
 const ContextProvider: React.FC<Props> = ({ children }) => {
   const [mode, setMode] = useState("light");
 
+  
+
+  const theme =
+   typeof window !== "undefined" && localStorage.getItem("theme") !== null
+      ?localStorage.getItem("theme")
+      : null;
+
   const handleModeChange = () => {
-    if (mode === "light") {
-      setMode("dark");
-      document.documentElement.classList.remove("light");
-      document.documentElement.classList.add("dark");
-    } else {
+    if (
+      theme === "light" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme:light)").matches)
+    ) {
       setMode("light");
       document.documentElement.classList.remove("dark");
-      document.documentElement.classList.add("light");
+      
+    } else {
+      setMode("dark");
+      document.documentElement.classList.add("dark");
     }
   };
 
-  // useEffect(() => {
-  //   handleModeChange();
-  // }, [mode]);
+  useEffect(() => {
+    handleModeChange();
+  }, [mode]);
 
   return (
     <Context.Provider value={{ mode, setMode }}>{children}</Context.Provider>
