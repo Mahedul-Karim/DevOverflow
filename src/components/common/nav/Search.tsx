@@ -13,7 +13,7 @@ const Search = () => {
           height={24}
           className="cursor-pointer"
         />
-        <Input
+        <input
           type="text"
           placeholder="Search..."
           value=""

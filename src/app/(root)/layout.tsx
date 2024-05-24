@@ -13,8 +13,10 @@ const Layout: React.FC<Props> = ({ children }) => {
       <NavBar />
       <div className="flex">
         <LeftSidebar />
-        <section className="flex min-h-screen flex-1 flex-col px-6 pb-6 pt-6 max-md:pb-14 sm:px-14">
-          <div className="mx-auto w-full max-w-5xl custom-scrollbar">{children}</div>
+        <section className="flex flex-1 flex-col px-6 pb-6 pt-6 max-md:pb-14 sm:px-14 custom-scrollbar h-[calc(100vh_-_104px)] overflow-auto">
+          <div className="mx-auto w-full max-w-5xl">
+            {children}
+          </div>
         </section>
         <RightSidebar />
       </div>
