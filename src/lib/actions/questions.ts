@@ -68,7 +68,7 @@ export const createQuestion = async (params: CreateQuestionParams) => {
       },
     });
 
-    revalidatePath(path)
+    revalidatePath(path as string)
 
   } catch (err) {
     console.log(err);
