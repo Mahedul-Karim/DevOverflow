@@ -7,49 +7,15 @@ import Link from "next/link";
 import React from "react";
 import Card from "@/components/questions/Card";
 import NoResult from "@/components/common/NoResult";
+import { getQuestions } from "@/lib/actions/questions";
 
-const questions = [
-  {
-    _id: 1,
-    title: "Hhif",
-    tags: [
-      {
-        _id: 1.5,
-        name: "jjsfsd",
-      },
-    ],
-    author: {
-      _id:34,
-      name:'sdss',
-      picture:'scsdf'
-    },
-    upvotes: 100,
-    views: 34,
-    answers: 2,
-    createdAt: new Date('2024-05-22T11:58:52.333Z'),
-  },
-  {
-    _id: 2,
-    title: "Hhif",
-    tags: [
-      {
-        _id: 2.5,
-        name: "jjsfsd",
-      },
-    ],
-    author: {
-      _id:34,
-      name:'sdss',
-      picture:'scsdf'
-    },
-    upvotes: 15000,
-    views: 34000000,
-    answers: 2,
-    createdAt: new Date(),
-  },
-];
+const HomePage = async () => {
+  const result = await getQuestions({});
 
-const HomePage = () => {
+  const questions = result?.questions;
+
+  console.log(result)
+
   return (
     <>
       <div className="flex w-full flex-col-reverse justify-between gap-4 sm:flex-row sm:items-center">

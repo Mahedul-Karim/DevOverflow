@@ -1,12 +1,48 @@
 import { BADGE_CRITERIA } from "./components/util/data";
+import { Document } from "mongoose";
 
+interface ITag extends Document {
+  name:string;
+  description:string;
+  questions:Schema.Types.ObjectId[];
+  followers:Schema.Types.ObjectId[];
+  createdAt:Date;
+}
 
-export interface SidebarLink {
+interface IUser extends Document {
+  clerkId:string;
+  name:string;
+  username:string;
+  email:string;
+  password?:string;
+  bio?:string;
+  picture:string;
+  pictureId?:string;
+  location?:string;
+  portfolioWebsite?:string;
+  reputation?:number;
+  saved:Schema.Types.ObjectId[];
+  joinedAt:Date;
+}
+
+interface IQuestion extends Document {
+  title: string;
+  content: string;
+  tags: Schema.Types.ObjectId[];
+  views: number;
+  upvotes: Schema.Types.ObjectId[];
+  downvotes: Schema.Types.ObjectId[];
+  author: Schema.Types.ObjectId;
+  answers: Schema.Types.ObjectId[];
+  createdAt: Date;
+}
+
+interface SidebarLink {
   imgURL: string;
   route: string;
   label: string;
 }
-export interface Job {
+interface Job {
   id?: string;
   employer_name?: string;
   employer_logo?: string | undefined;
@@ -19,22 +55,22 @@ export interface Job {
   job_state?: string;
   job_country?: string;
 }
-export interface Country {
+interface Country {
   name: {
     common: string;
   };
 }
-export interface ParamsProps {
+interface ParamsProps {
   params: { id: string };
 }
-export interface SearchParamsProps {
+interface SearchParamsProps {
   searchParams: { [key: string]: string | undefined };
 }
-export interface URLProps {
+interface URLProps {
   params: { id: string };
   searchParams: { [key: string]: string | undefined };
 }
-export interface BadgeCounts {
+interface BadgeCounts {
   GOLD: number;
   SILVER: number;
   BRONZE: number;
