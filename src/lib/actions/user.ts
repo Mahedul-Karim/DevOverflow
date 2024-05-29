@@ -48,7 +48,7 @@ export const updateUser = async function (params: UpdateUserParams) {
       new: true,
     });
 
-    revalidatePath(path);
+    revalidatePath(path as string);
   } catch (err) {
     console.log(err);
     throw err;
