@@ -14,7 +14,7 @@ const HomePage = async () => {
 
   const questions = result?.questions;
 
-  console.log(result)
+  
 
   return (
     <>

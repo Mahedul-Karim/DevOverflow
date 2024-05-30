@@ -1,18 +1,25 @@
 "use server";
 
+import Question from "../models/question";
 import { revalidatePath } from "next/cache";
 import { connectDB } from "../db";
-import Question from "../models/question";
 import Tag from "../models/tag";
 import { CreateQuestionParams, GetQuestionsParams } from "./action.types";
+import User from "../models/user";
 
 export const getQuestions = async (params: GetQuestionsParams) => {
   try {
     connectDB();
 
     const questions = await Question.find()
-      .populate("tags")
-      .populate("author")
+      .populate({
+        path: "tags",
+        model: Tag,
+      })
+      .populate({
+        path: "author",
+        model: User,
+      })
       .sort({ createdAt: -1 });
 
     return { questions };
@@ -68,8 +75,7 @@ export const createQuestion = async (params: CreateQuestionParams) => {
       },
     });
 
-    revalidatePath(path as string)
-
+    revalidatePath(path as string);
   } catch (err) {
     console.log(err);
   }

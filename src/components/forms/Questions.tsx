@@ -102,7 +102,7 @@ const Questions: React.FC<Props> = ({ userId }) => {
 
     form.setValue("tags", newTag);
   };
-
+  console.log(process.env.NEXT_PUBLIC_TINY_API_KEY);
   return (
     <Form {...form}>
       <form

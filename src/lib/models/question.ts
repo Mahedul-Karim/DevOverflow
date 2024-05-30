@@ -50,6 +50,6 @@ const QuestionSchema = new Schema({
 });
 
 
-const Question =models.Question || model('Question',QuestionSchema);
+const Question =models?.Question || model('Question',QuestionSchema);
 
 export default Question;
