@@ -17,6 +17,7 @@ export const connectDB = () => {
     .connect(process.env.MONGODB_URL)
     .then(() => {
       console.log("DB connection was successfull!!");
+      isConnected=true;
     })
     .catch((err) => console.log("Error connecting to database!!"));
 };

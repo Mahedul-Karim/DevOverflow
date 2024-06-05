@@ -10,9 +10,9 @@ interface Props {
   title: string;
   tags: Array<TagsType>;
   author: Author;
-  upvotes: number;
+  upvotes: Array<string>;
   views: number;
-  answers: number | Array<object>;
+  answers: Array<object>;
   createdAt: Date;
 }
 
@@ -27,7 +27,7 @@ const Card: React.FC<Props> = ({
   createdAt,
 }) => {
   return (
-    <div className="bg-light-900 dark:dark-gradient shadow-light-100 dark:shadow-dark-100 rounded-[10px] p-9 sm:px-11">
+    <div className="bg-light-900 dark:bg-dark-400 shadow-light-100 dark:shadow-dark-100 rounded-[10px] p-9 sm:px-11">
       <div className="flex flex-col-reverse items-start justify-between gap-5 sm:flex-row">
         <div>
           <span className="text-[10px] font-normal leading-[13px] text-dark-400 dark:text-light-700 line-clamp-1 flex sm:hidden">
@@ -58,14 +58,14 @@ const Card: React.FC<Props> = ({
         <Metric
           imgUrl="/assets/icons/like.svg"
           alt="Upvotes"
-          value={formatNumber(upvotes)}
+          value={formatNumber(upvotes.length)}
           title=" Votes"
           extraStyles="text-[12px] font-medium leading-[15.6px] text-dark-400 dark:text-light-800"
         />
         <Metric
           imgUrl="/assets/icons/message.svg"
           alt="Answers"
-          value={formatNumber(5)}
+          value={formatNumber(answers.length)}
           title=" Answers"
           extraStyles="text-[12px] font-medium leading-[15.6px] text-dark-400 dark:text-light-800"
         />

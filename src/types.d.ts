@@ -1,3 +1,4 @@
+import { Schema } from "mongoose";
 import { BADGE_CRITERIA } from "./components/util/data";
 import { Document } from "mongoose";
 
@@ -6,6 +7,15 @@ interface ITag extends Document {
   description:string;
   questions:Schema.Types.ObjectId[];
   followers:Schema.Types.ObjectId[];
+  createdAt:Date;
+}
+
+interface IAnswer extends Document{
+  author:Schema.Types.ObjectId;
+  question:Schema.Types.ObjectId;
+  content:string;
+  upvotes:Schema.Types.ObjectId[];
+  downvotes:Schema.Types.ObjectId[];
   createdAt:Date;
 }
 

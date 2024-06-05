@@ -30,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
-      <body className={`${inter.variable} ${spaceGrotest.variable} overflow-clip`}>
+    <html lang="en" className="light" >
+      <body className={`${inter.variable} ${spaceGrotest.variable} overflow-clip`} suppressHydrationWarning>
         <ClerkProvider
           appearance={{
             elements: {
