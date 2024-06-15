@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { sidebarLinks } from "@/components/util/data";
-import { SignedOut } from "@clerk/nextjs";
+import { SignedOut, useAuth } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,8 @@ import React from "react";
 const LeftSidebar = () => {
   const pathname = usePathname();
 
+  const { userId } = useAuth();
+
   return (
     <aside className="bg-light-900 dark:bg-dark-200 border-light-700 dark:border-dark-400 border-r border-solid flex h-[calc(100vh_-_104px)] flex-col justify-between overflow-y-auto p-6 shadow-light-300 dark:shadow-none max-sm:hidden lg:w-[266px] custom-scrollbar">
       <section className="flex flex-1 flex-col gap-6">
@@ -17,6 +19,14 @@ const LeftSidebar = () => {
           const isActive =
             (pathname.includes(item.route) && item.route.length > 1) ||
             pathname === item.route;
+
+          if(item.route === '/profile'){
+            if(userId){
+              item.route = `${item.route}/${userId}`
+            }else{
+              return null;
+            }
+          }
 
           return (
             <Link

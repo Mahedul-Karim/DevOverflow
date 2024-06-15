@@ -6,17 +6,65 @@ import { connectDB } from "../db";
 import Tag from "../models/tag";
 import {
   CreateQuestionParams,
+  DeleteQuestionParams,
+  EditQuestionParams,
   GetQuestionByIdParams,
   GetQuestionsParams,
   QuestionVoteParams,
 } from "./action.types";
 import User from "../models/user";
+import Answer from "../models/answer";
+import Interaction from "../models/interaction";
+import { FilterQuery } from "mongoose";
 
 export const getQuestions = async (params: GetQuestionsParams) => {
   try {
     connectDB();
 
-    const questions = await Question.find()
+    const { searchQuery, filter, page = 1, pageSize = 20 } = params;
+
+    const query: FilterQuery<typeof Question> = {};
+
+    const skipPageAmount = (page - 1) * pageSize;
+
+    if (searchQuery) {
+      query.$or = [
+        {
+          title: {
+            $regex: new RegExp(searchQuery, "i"),
+          },
+        },
+        {
+          content: {
+            $regex: new RegExp(searchQuery, "i"),
+          },
+        },
+      ];
+    }
+
+    let sortOptions = {};
+
+    switch (filter) {
+      case "newest":
+        sortOptions = {
+          createdAt: -1,
+        };
+        break;
+      case "frequent":
+        sortOptions = {
+          views: -1,
+        };
+        break;
+      case "unanswered":
+        query.answers = {
+          $size: 0,
+        };
+        break;
+      default:
+        break;
+    }
+
+    const questions = await Question.find(query)
       .populate({
         path: "tags",
         model: Tag,
@@ -25,9 +73,15 @@ export const getQuestions = async (params: GetQuestionsParams) => {
         path: "author",
         model: User,
       })
-      .sort({ createdAt: -1 });
+      .skip(skipPageAmount)
+      .limit(pageSize)
+      .sort(sortOptions);
 
-    return { questions };
+    const totalQuestions = await Question.countDocuments(query);
+
+    const isNext = totalQuestions > skipPageAmount + questions.length;
+
+    return { questions, isNext };
   } catch (error) {
     console.log(error);
     throw error;
@@ -77,6 +131,19 @@ export const createQuestion = async (params: CreateQuestionParams) => {
         tags: {
           $each: tagDocuments,
         },
+      },
+    });
+
+    await Interaction.create({
+      user: author,
+      action: "ask_question",
+      question: question._id,
+      tags: tagDocuments,
+    });
+
+    await User.findByIdAndUpdate(author, {
+      $inc: {
+        reputation: 5,
       },
     });
 
@@ -146,15 +213,24 @@ export const upvoteQuestion = async (params: QuestionVoteParams) => {
       new: true,
     });
 
+    await User.findByIdAndUpdate(userId, {
+      $inc: {
+        reputation: hasupVoted ? -1 : 1,
+      },
+    });
 
-    revalidatePath(path as string)
+    await User.findByIdAndUpdate(question.author,{
+      $inc:{
+        reputation:hasupVoted ? -10 : 10
+      }
+    })
 
+    revalidatePath(path as string);
   } catch (err) {
     console.log(err);
     throw err;
   }
 };
-
 
 export const downvoteQuestion = async (params: QuestionVoteParams) => {
   try {
@@ -191,9 +267,82 @@ export const downvoteQuestion = async (params: QuestionVoteParams) => {
       new: true,
     });
 
+    await User.findByIdAndUpdate(userId, {
+      $inc: {
+        reputation: hasdownVoted ? 2 : -2,
+      },
+    });
 
-    revalidatePath(path as string)
+    await User.findByIdAndUpdate(question.author, {
+      $inc: {
+        reputation: hasdownVoted ? 10 : -10,
+      },
+    });
 
+    revalidatePath(path as string);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const deleteQuestion = async (params: DeleteQuestionParams) => {
+  try {
+    connectDB();
+
+    const { questionId, path } = params;
+
+    await Question.deleteOne({ _id: questionId });
+    await Answer.deleteMany({ question: questionId });
+    await Interaction.deleteMany({ question: questionId });
+    await Tag.updateMany(
+      { questions: questionId },
+      {
+        $pull: {
+          questions: questionId,
+        },
+      }
+    );
+
+    revalidatePath(path as string);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const editQuestion = async (params: EditQuestionParams) => {
+  try {
+    connectDB();
+
+    const { questionId, path, title, content } = params;
+
+    const question = await Question.findById(questionId).populate({
+      path: "tags",
+      model: Tag,
+    });
+
+    question.title = title;
+    question.content = content;
+
+    await question.save();
+
+    revalidatePath(path as string);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const getHotQuestions = async () => {
+  try {
+    connectDB();
+
+    const questions = await Question.find({})
+      .sort({ views: -1, upvotes: -1 })
+      .limit(5);
+
+    return questions;
   } catch (err) {
     console.log(err);
     throw err;

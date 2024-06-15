@@ -11,6 +11,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getUser } from "@/lib/actions/user";
 import AllAnswers from "@/components/questions/details/AllAnswers";
 import Voting from "@/components/layout/Voting";
+import { redirect } from "next/navigation";
 
 interface Props {
   params: {
@@ -23,11 +24,15 @@ const QuestionDetailsPage: React.FC<Props> = async ({ params }) => {
 
   const { userId } = auth();
 
+ 
+
   let user;
 
   if (userId) {
     user = await getUser({ userId });
   }
+
+  
 
   return (
     <>
@@ -49,16 +54,16 @@ const QuestionDetailsPage: React.FC<Props> = async ({ params }) => {
             </p>
           </Link>
           <div className="flex justify-end">
-            <Voting
+            {question?.author._id.toString() !== user?._id?.toString() && <Voting
               type="question"
               itemId={JSON.stringify(question._id)}
-              userId={JSON.stringify(user._id)}
+              userId={user?._id && JSON.stringify(user?._id)}
               upvotes={question.upvotes.length}
-              hasupVoted={question.upvotes.includes(user._id)}
+              hasupVoted={question.upvotes.includes(user?._id)}
               downvotes={question.downvotes.length}
-              hasdownVoted={question.downvotes.includes(user._id)}
+              hasdownVoted={question.downvotes.includes(user?._id)}
               hasSaved={user?.saved.includes(question._id)}
-            />
+            />}
           </div>
         </div>
         <h2 className="text-[24px] font-semibold leading-[31.2px] text-dark-200 dark:text-light-900 mt-3.5 w-full text-left">
@@ -97,14 +102,14 @@ const QuestionDetailsPage: React.FC<Props> = async ({ params }) => {
 
       <AllAnswers
         questionId={question._id}
-        userId={user._id}
+        userId={user?._id}
         totalAnswers={question.answers.length}
       />
 
       <AnswersForm
         question={question.content}
         questionId={JSON.stringify(question._id)}
-        authorId={JSON.stringify(user._id)}
+        authorId={user?._id && JSON.stringify(user?._id)}
       />
     </>
   );

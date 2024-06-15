@@ -16,11 +16,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+
 import { formSchema } from "../util/validations";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
-import { createQuestion } from "@/lib/actions/questions";
+import { createQuestion, editQuestion } from "@/lib/actions/questions";
 import { usePathname, useRouter } from "next/navigation";
 
 type KeyDownFunction = (
@@ -28,42 +28,62 @@ type KeyDownFunction = (
   field: any
 ) => void;
 
-const type: string = "create";
-
 interface Props {
   userId: string;
+  type?: string;
+  questionDetails?: string;
 }
 
-const Questions: React.FC<Props> = ({ userId }) => {
+const Questions: React.FC<Props> = ({
+  userId,
+  type = "create",
+  questionDetails,
+}) => {
   const editorRef = useRef<any>();
 
   const router = useRouter();
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const details =questionDetails && JSON.parse(questionDetails || "");
+
+  const groupedTags = details?.tags?.map((tag: any) => tag.name);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      explanation: "",
-      tags: [],
+      title: details?.title || "",
+      explanation: details?.content || "",
+      tags: groupedTags || [],
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true);
-      await createQuestion({
-        title: values.title,
-        content: values.explanation,
-        tags: values.tags,
-        author: userId as any,
-        path:pathname
-      });
 
-      router.push('/')
+      if (type === "edit") {
 
+        await editQuestion({
+          questionId:details._id,
+          title:values.title,
+          content:values.explanation,
+          path:pathname
+        })
+
+        router.push(`/question/${details._id}`);
+      } else {
+        await createQuestion({
+          title: values.title,
+          content: values.explanation,
+          tags: values.tags,
+          author: userId as any,
+          path: pathname,
+        });
+
+        router.push("/");
+      }
     } catch (err) {
     } finally {
       setIsSubmitting(false);
@@ -98,11 +118,14 @@ const Questions: React.FC<Props> = ({ userId }) => {
   };
 
   const handleTagRemove = (tag: string, field: any) => {
+    if (type === "edit") {
+      return;
+    }
     const newTag = field.value.filter((t: string) => t !== tag);
 
     form.setValue("tags", newTag);
   };
-  console.log(process.env.NEXT_PUBLIC_TINY_API_KEY);
+
   return (
     <Form {...form}>
       <form
@@ -145,7 +168,7 @@ const Questions: React.FC<Props> = ({ userId }) => {
                 <Editor
                   apiKey={process.env.NEXT_PUBLIC_TINY_API_KEY}
                   onInit={(_evt, editor) => (editorRef.current = editor)}
-                  initialValue=""
+                  initialValue={details?.content || ""}
                   onBlur={field.onBlur}
                   onEditorChange={(content) => field.onChange(content)}
                   init={{
@@ -198,6 +221,7 @@ const Questions: React.FC<Props> = ({ userId }) => {
                     className="text-[16px] font-normal leading-[22.4px] focus-visible:ring-0 focus-visible:ring-transparent bg-light-800 dark:bg-dark-400 border-none shadow-none outline-none dark:text-light-800 px-3 py-2 min-h-[56px] rounded-md border-light-700 dark:border-dark-400 border"
                     placeholder="Add tags..."
                     onKeyDown={(e) => handleKeyDown(e, field)}
+                    disabled={type === "edit"}
                   />
                   {field.value.length > 0 && (
                     <div className="flex items-center justify-start mt-2.5 gap-2.5">
@@ -208,13 +232,15 @@ const Questions: React.FC<Props> = ({ userId }) => {
                           onClick={() => handleTagRemove(tag, field)}
                         >
                           {tag}
-                          <Image
-                            src="/assets/icons/close.svg"
-                            alt="close icon"
-                            width={12}
-                            height={12}
-                            className="cursor-pointer object-contain invert-0 dark:invert"
-                          />
+                          {type !== "edit" && (
+                            <Image
+                              src="/assets/icons/close.svg"
+                              alt="close icon"
+                              width={12}
+                              height={12}
+                              className="cursor-pointer object-contain invert-0 dark:invert"
+                            />
+                          )}
                         </Badge>
                       ))}
                     </div>

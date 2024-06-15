@@ -3,11 +3,19 @@ import Filter from "@/components/layout/filter/Filter";
 import Search from "@/components/layout/search/Search";
 import { UserFilters } from "@/components/util/data";
 import { getAllUser } from "@/lib/actions/user";
+import { SearchParamsProps } from "@/types";
 import Link from "next/link";
 import React from "react";
+import Loading from "./loading";
 
-const CommunityPage = async () => {
-  const results = await getAllUser({});
+const CommunityPage:React.FC<SearchParamsProps> = async ({ searchParams }) => {
+  const results = await getAllUser({
+    searchQuery: searchParams?.q,
+    filter:searchParams?.filter
+  });
+
+
+
 
   return (
     <>

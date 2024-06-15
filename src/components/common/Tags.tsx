@@ -3,7 +3,7 @@ import { Badge } from "../ui/badge";
 import Link from "next/link";
 
 interface Props {
-  _id: string | number;
+  _id: string;
   name: string;
   totalQustions?: number;
   showCount?: boolean;

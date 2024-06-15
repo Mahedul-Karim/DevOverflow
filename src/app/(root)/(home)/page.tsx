@@ -8,13 +8,19 @@ import React from "react";
 import Card from "@/components/questions/Card";
 import NoResult from "@/components/common/NoResult";
 import { getQuestions } from "@/lib/actions/questions";
+import { SearchParamsProps } from "@/types";
+import Pagination from "@/components/common/pagination/Pagination";
+import Loading from "./loading";
 
-const HomePage = async () => {
-  const result = await getQuestions({});
+const HomePage: React.FC<SearchParamsProps> = async ({ searchParams }) => {
+  const result = await getQuestions({
+    searchQuery: searchParams?.q,
+    filter: searchParams?.filter,
+    page:searchParams?.page ? +searchParams.page : 1
+  });
 
   const questions = result?.questions;
 
-  
 
   return (
     <>
@@ -67,6 +73,12 @@ const HomePage = async () => {
             linkTitle="Ask a Qustion"
           />
         )}
+      </div>
+      <div className="mt-10">
+        <Pagination
+          pageNumber={searchParams?.page ? +searchParams.page : 1}
+          isNext={result.isNext}
+        />
       </div>
     </>
   );

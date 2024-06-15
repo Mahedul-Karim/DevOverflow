@@ -19,6 +19,15 @@ interface IAnswer extends Document{
   createdAt:Date;
 }
 
+interface IInteraction extends Document{
+  user:Schema.Types.ObjectId;
+  action:string;
+  question:Schema.Types.ObjectId;
+  answer:Schema.Types.ObjectId;
+  tags:Schema.Types.ObjectId[];
+  createdAt:Date;
+}
+
 interface IUser extends Document {
   clerkId:string;
   name:string;
@@ -95,10 +104,13 @@ type TimeStampFunction = (data:Date)=>string;
 
 type NumberFunction = (num:number)=>string;
 
+
+
 interface Author {
   _id: string | number;
   name: string;
   picture: string;
+  clerkId?:string;
 }
 
 export type BadgeCriteriaType = keyof typeof BADGE_CRITERIA;

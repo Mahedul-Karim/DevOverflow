@@ -1,6 +1,7 @@
 import NavBar from "@/components/common/nav/NavBar";
 import LeftSidebar from "@/components/common/sidebars/LeftSidebar";
 import RightSidebar from "@/components/common/sidebars/RightSidebar";
+import { Toaster } from "@/components/ui/toaster";
 import React from "react";
 
 interface Props {
@@ -20,6 +21,7 @@ const Layout: React.FC<Props> = ({ children }) => {
         </section>
         <RightSidebar />
       </div>
+      <Toaster />
     </main>
   );
 };

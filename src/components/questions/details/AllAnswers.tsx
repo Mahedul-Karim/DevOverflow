@@ -29,7 +29,7 @@ const AllAnswers: React.FC<Props> = async ({
     <div className="mt-11">
       <div className="flex items-center justify-between">
         <h3 className="primary-text-gradient">{totalAnswers} Answers</h3>
-        <Filter filters={AnswerFilters} />
+        {/* <Filter filters={AnswerFilters} /> */}
       </div>
       <div>
         {result.answers.map((answer) => (
@@ -60,19 +60,19 @@ const AllAnswers: React.FC<Props> = async ({
                   </div>
                 </Link>
                 <div className="flex justify-end">
-                <Voting
-              type="answer"
-              itemId={JSON.stringify(answer._id)}
-              userId={JSON.stringify(userId)}
-              upvotes={answer.upvotes.length}
-              hasupVoted={answer.upvotes.includes(userId)}
-              downvotes={answer.downvotes.length}
-              hasdownVoted={answer.downvotes.includes(userId)}
-            />
+                  <Voting
+                    type="answer"
+                    itemId={JSON.stringify(answer._id)}
+                    userId={userId && JSON.stringify(userId)}
+                    upvotes={answer.upvotes.length}
+                    hasupVoted={answer.upvotes.includes(userId)}
+                    downvotes={answer.downvotes.length}
+                    hasdownVoted={answer.downvotes.includes(userId)}
+                  />
                 </div>
               </div>
             </div>
-              <ParseHTML data={answer.content} />
+            <ParseHTML data={answer.content} />
           </article>
         ))}
       </div>

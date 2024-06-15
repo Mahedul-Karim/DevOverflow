@@ -4,11 +4,12 @@ import Search from "@/components/layout/search/Search";
 import Card from "@/components/questions/Card";
 import { QuestionFilters } from "@/components/util/data";
 import { getSavedQuestions } from "@/lib/actions/user";
+import { SearchParamsProps } from "@/types";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import React from "react";
 
-const CollectionPage = async () => {
+const CollectionPage:React.FC<SearchParamsProps> = async ({ searchParams }) => {
   const { userId } = auth();
 
   if (!userId) {
@@ -18,6 +19,8 @@ const CollectionPage = async () => {
 
   const result = await getSavedQuestions({
     clerkId: userId,
+    searchQuery: searchParams?.q,
+    filter:searchParams?.filter
   });
 
   return (

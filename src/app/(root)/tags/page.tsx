@@ -2,13 +2,17 @@ import NoResult from "@/components/common/NoResult";
 import Card from "@/components/community/Card";
 import Filter from "@/components/layout/filter/Filter";
 import Search from "@/components/layout/search/Search";
-import { UserFilters } from "@/components/util/data";
+import { TagFilters } from "@/components/util/data";
 import { getAllTags } from "@/lib/actions/tags";
+import { SearchParamsProps } from "@/types";
 import Link from "next/link";
 import React from "react";
 
-const TagsPage = async () => {
-  const results = await getAllTags({});
+const TagsPage:React.FC<SearchParamsProps> = async ({ searchParams }) => {
+  const results = await getAllTags({
+    searchQuery: searchParams?.q,
+    filter:searchParams?.filter
+  });
 
   return (
     <>
@@ -24,7 +28,7 @@ const TagsPage = async () => {
           extraClass="flex-1"
         />
         <Filter
-          filters={UserFilters}
+          filters={TagFilters}
           extraClass="min-h-[56px] sm:min-w-[170px]"
         />
       </div>

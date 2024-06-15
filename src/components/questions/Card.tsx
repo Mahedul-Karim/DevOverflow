@@ -4,6 +4,8 @@ import React from "react";
 import Tags from "../common/Tags";
 import Metric from "../common/Metric";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
+import { SignedIn } from "@clerk/nextjs";
+import ActionButton from "./ActionButton";
 
 interface Props {
   _id: string | number;
@@ -14,6 +16,7 @@ interface Props {
   views: number;
   answers: Array<object>;
   createdAt: Date;
+  clerkId?:string;
 }
 
 const Card: React.FC<Props> = ({
@@ -25,7 +28,11 @@ const Card: React.FC<Props> = ({
   views,
   answers,
   createdAt,
+  clerkId
 }) => {
+
+  const isAuthor = clerkId && clerkId === author.clerkId;
+
   return (
     <div className="bg-light-900 dark:bg-dark-400 shadow-light-100 dark:shadow-dark-100 rounded-[10px] p-9 sm:px-11">
       <div className="flex flex-col-reverse items-start justify-between gap-5 sm:flex-row">
@@ -39,6 +46,9 @@ const Card: React.FC<Props> = ({
             </h3>
           </Link>
         </div>
+        <SignedIn>
+          {isAuthor && <ActionButton type="question" itemId={JSON.stringify(_id)}/>}
+        </SignedIn>
       </div>
       <div className="mt-3.5 flex flex-wrap gap-2">
         {tags.map((tag) => (

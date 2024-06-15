@@ -1,11 +1,13 @@
 "use client";
 import { downvoteAnswer, upvoteAnswer } from "@/lib/actions/answers";
+import { viewQuestion } from "@/lib/actions/intercation";
 import { downvoteQuestion, upvoteQuestion } from "@/lib/actions/questions";
 import { saveQuestion } from "@/lib/actions/user";
 import { formatNumber } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
+import { toast } from "../ui/use-toast";
 
 interface Props {
   type: string;
@@ -32,6 +34,12 @@ const Voting: React.FC<Props> = ({
   const router = useRouter();
 
   const handleSave = async () => {
+    if (!userId) {
+      return toast({
+        title: "Please log in",
+        description: "You must logged in to submit vote",
+      });
+    }
     await saveQuestion({
       userId: JSON.parse(userId),
       questionId: JSON.parse(itemId),
@@ -39,8 +47,22 @@ const Voting: React.FC<Props> = ({
     });
   };
 
+  useEffect(() => {
+    if (userId) {
+      viewQuestion({
+        questionId: JSON.parse(itemId),
+        userId: JSON.parse(userId),
+      });
+    }
+  }, [itemId, userId, pathname, router]);
+
   const handleVoting = async (votingType: string) => {
-    if (!userId) return;
+    if (!userId) {
+      return toast({
+        title: "Please log in",
+        description: "You must logged in to submit vote",
+      });
+    }
 
     if (votingType === "upvote") {
       if (type === "question") {

@@ -9,11 +9,16 @@ import {
   DeleteUserParams,
   GetAllUsersParams,
   GetSavedQuestionsParams,
+  GetUserByIdParams,
+  GetUserStatsParams,
   ToggleSaveQuestionParams,
   UpdateUserParams,
 } from "./action.types";
 import Question from "../models/question";
 import Tag from "../models/tag";
+import Answer from "../models/answer";
+import { BadgeCriteriaType } from "@/types";
+import { assignBadges } from "../utils";
 
 export const getUser = async function (params: any) {
   try {
@@ -89,7 +94,46 @@ export const getAllUser = async (params: GetAllUsersParams) => {
 
     const { page = 1, pageSize = 20, filter, searchQuery } = params;
 
-    const users = await User.find({}).sort({ createdAt: -1 });
+    const query: FilterQuery<typeof User> = {};
+
+    if (searchQuery) {
+      query.$or = [
+        {
+          name: {
+            $regex: new RegExp(searchQuery, "i"),
+          },
+        },
+        {
+          username: {
+            $regex: new RegExp(searchQuery, "i"),
+          },
+        },
+      ];
+    }
+
+    let sortOptions = {};
+
+    switch (filter) {
+      case "new_users":
+        sortOptions = {
+          joinedAt: -1,
+        };
+        break;
+      case "old_users":
+        sortOptions = {
+          joinedAt: 1,
+        };
+        break;
+      case "top_contributors":
+        sortOptions = {
+          reputation: 1,
+        };
+        break;
+      default:
+        break;
+    }
+
+    const users = await User.find(query).sort(sortOptions);
 
     return { users };
   } catch (err) {
@@ -155,13 +199,43 @@ export const getSavedQuestions = async (params: GetSavedQuestionsParams) => {
       ? { title: { $regex: new RegExp(searchQuery, "i") } }
       : {};
 
+    let sortOptions = {};
+
+    switch (filter) {
+      case "most_recent":
+        sortOptions = {
+          createdAt: -1,
+        };
+        break;
+      case "oldest":
+        sortOptions = {
+          createdAt: 1,
+        };
+        break;
+      case "most_voted":
+        sortOptions = {
+          upvotes: -1,
+        };
+        break;
+      case "most_viewed":
+        sortOptions = {
+          views: -1,
+        };
+        break;
+      case "most_answered":
+        sortOptions = {
+          answers: 1,
+        };
+        break;
+      default:
+        break;
+    }
+
     const user = await User.findOne({ clerkId }).populate({
       path: "saved",
       match: query,
       options: {
-        sort: {
-          createdAt: -1,
-        },
+        sort: sortOptions,
       },
       model: Question,
       populate: [
@@ -181,6 +255,170 @@ export const getSavedQuestions = async (params: GetSavedQuestionsParams) => {
     const questions = user.saved;
 
     return { questions };
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const getUserInfo = async (params: GetUserByIdParams) => {
+  try {
+    connectDB();
+
+    const { userId } = params;
+
+    const user = await User.findOne({ clerkId: userId });
+   
+
+    const totalQuestions = await Question.countDocuments({ author: user._id });
+    const totalAnswers = await Answer.countDocuments({ author: user._id });
+
+    const [questionUpvotes] = await Question.aggregate([
+      {
+        $match: {
+          author: user._id,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          upvotes: {
+            $size: "$upvotes",
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalUpvotes: {
+            $sum: "$upvotes",
+          },
+        },
+      },
+    ]);
+
+    const [answerUpvotes] = await Answer.aggregate([
+      {
+        $match: {
+          author: user._id,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          upvotes: {
+            $size: "$upvotes",
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalUpvotes: {
+            $sum: "$upvotes",
+          },
+        },
+      },
+    ]);
+
+    const [questionViews] = await Answer.aggregate([
+      {
+        $match: {
+          author: user._id,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalViews: {
+            $sum: "$views",
+          },
+        },
+      },
+    ]);
+
+    const criteria=[
+      {
+        type:"QUESTION_COUNT" as BadgeCriteriaType,
+        count:totalQuestions
+      },
+      {
+        type:"ANSWER_COUNT" as BadgeCriteriaType,
+        count:totalAnswers
+      },
+      {
+        type:"QUESTION_UPVOTES" as BadgeCriteriaType,
+        count:questionUpvotes?.totalUpvotes || 0
+      },
+      {
+        type:"ANSWER_COUNT" as BadgeCriteriaType,
+        count:answerUpvotes?.totalUpvotes || 0
+      },
+      {
+        type:"TOTAL_VIEWS" as BadgeCriteriaType,
+        count:questionViews?.totalViews || 0
+      },
+    ]
+
+    const badgeCounts = assignBadges({ criteria })
+
+    return { user, totalQuestions, totalAnswers,badgeCounts };
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const getUserQuestions = async (params: GetUserStatsParams) => {
+  try {
+    connectDB();
+
+    const { userId, page = 1, pageSize = 10 } = params;
+
+    const totalQuestions = await Question.countDocuments({ author: userId });
+
+    const questions = await Question.find({ author: userId })
+      .sort({ createdAt: -1, views: -1, upvotes: -1 })
+      .populate({
+        path: "tags",
+        model: Tag,
+        select: "_id name",
+      })
+      .populate({
+        path: "author",
+        model: User,
+        select: "_id clerkId name picture",
+      });
+
+    return { totalQuestions, questions };
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const getUserAnswers = async (params: GetUserStatsParams) => {
+  try {
+    connectDB();
+
+    const { userId, page = 1, pageSize = 10 } = params;
+
+    const totalAnswers = await Answer.countDocuments({ author: userId });
+
+    const answers = await Answer.find({ author: userId })
+      .sort({ upvotes: -1 })
+      .populate({
+        path: "question",
+        model: Question,
+        select: "_id title",
+      })
+      .populate({
+        path: "author",
+        model: User,
+        select: "_id clerkId name picture",
+      });
+
+    return { totalAnswers, answers };
   } catch (err) {
     console.log(err);
     throw err;

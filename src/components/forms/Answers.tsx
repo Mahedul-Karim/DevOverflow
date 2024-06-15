@@ -44,6 +44,9 @@ const AnswersForm: React.FC<Props> = ({ question, questionId, authorId }) => {
   const { mode } = useCtx();
 
   const submitAnswer = async (values: z.infer<typeof AnswerSchema>) => {
+    if(!authorId){
+      return;
+    }
     try {
       setIsSubmitting(true);
 
@@ -69,22 +72,15 @@ const AnswersForm: React.FC<Props> = ({ question, questionId, authorId }) => {
     }
   };
 
+    
+
   return (
     <div className="mt-8">
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center sm:gap-2">
         <h4 className="text-[16px] font-semibold leading-[20.8px] text-dark-400 dark:text-light-800">
           Write your answer here
         </h4>
-        <Button className="bg-light-800 dark:bg-dark-300 border-light-700 dark:border-dark-400 gap-1.5 rounded-md px-4 py-2.5 text-primary-500 shadow-none">
-          <Image
-            src="/assets/icons/stars.svg"
-            alt="star"
-            width={12}
-            height={12}
-            className="object-contain"
-          />
-          Generate an AI Answer
-        </Button>
+        
       </div>
       <Form {...form}>
         <form
