@@ -62,7 +62,7 @@ const Card: React.FC<Props> = ({
           value={author.name}
           title={`- asked ${getTimeStamp(createdAt)}`}
           extraStyles="text-[14px] font-medium leading-[18.2px] text-dark-400 dark:text-light-700"
-          href={`/profile/${author._id}`}
+          href={`/profile/${author.clerkId}`}
           isAuthor
         />
         <Metric
